@@ -1,0 +1,39 @@
+name: 'issues自动管理姬'
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+  issues:
+    types: [opened]
+
+jobs:
+  automatic_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 自动关闭有done标签且7天内无回复的issue
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: actions-cool/issues-helper@v2.0.0
+        with:
+          actions: 'close-issues'
+          labels: 'done'
+          inactive-day: 7
+          body: |
+            此issue已经被添加了done标签且已经超过7天没有活跃，为了减少issue数量此issue将被自动关闭，如此issue问题仍未解决请手动重新打开本issue
+            
+            --------------------------------------------------------------------------------------- 来自 simo8102/chinaunicom-AutoSignMachine issues自动管理姬
+          contents: 'laugh,heart,rocket'
+      
+      - name: 自动回复新建的issue
+        if: github.event_name == 'issues' && github.event.action == 'opened' && github.event.issue.author_association != 'OWNER'
+        uses: actions-cool/issues-helper@v2.0.0
+        with:
+          actions: 'create-comment'
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            你好 @${{ github.event.issue.user.login }} 欢迎创建issue。
+            1. 因为联通已经关闭或者更改了业务所以本项目大部分功能已经失效并不在支持，所以删除了本项目所有代码。
+            2. 请自行寻找类似得脚本使用，也感谢大家长久以来得支持
+            
+            --------------------------------------------------------------------------------------- 来自 simo8102/chinaunicom-AutoSignMachine issues自动管理姬
+          contents: 'laugh,heart,rocket'
